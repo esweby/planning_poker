@@ -1,0 +1,107 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 16px;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto 0;
+}
+
+.index--header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header--link {
+  text-decoration: none;
+  color: #000;
+}
+
+.container--user-details {
+  padding: 2rem;
+  max-width: 320px;
+  border: 1px solid black;
+  border-radius: 10px;
+  margin: 0 auto;
+  box-shadow: 0 0 2px 2px #000000aa;
+}
+
+.image--avatar-preview {
+  display: block;
+  margin: 0 auto 2rem;
+  width: 150px;
+  height: auto;
+}
+
+.label--user-details {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.label--user-details span {
+  font-weight: 600;
+  display: block;
+}
+
+.input--name {
+  font-size: 1.1rem;
+  width: 250px;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.select--role {
+  font-size: 1.1rem;
+  width: 250px;
+  display: block;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.index--main {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  padding-top: 4rem;
+}
+
+.button--start-session {
+  background-color: transparent;
+  font-size: 1.1rem;
+  width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid black;
+  border-radius: 0.25rem;
+  margin: 1.5rem 0 0;
+  transition: all ease 250ms;
+  cursor: pointer;
+}
+
+.image--start-spade {
+  width: 20px;
+  height: 20px;
+  transform: rotate(45deg);
+  transition: all ease 350ms;
+}
+
+.button--start-session:hover {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+}
+
+.button--start-session:hover .image--start-spade {
+  transform: rotate(450deg);
+}
