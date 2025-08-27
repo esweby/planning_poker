@@ -1,5 +1,7 @@
 package main
 
+import "backend/internals/api"
+
 func main() {
-	println("Hello, backend!")
+	api.Start()
 }
