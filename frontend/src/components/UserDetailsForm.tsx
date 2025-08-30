@@ -1,12 +1,14 @@
 import { useUser } from "../contexts/UserContext";
 import avatar from "animal-avatar-generator";
 import { useEffect, useState, type ReactNode } from "react";
+import JoinRoomBtn from "./JoinRoomBtn";
 
 interface UserDetailsForm {
-  children: ReactNode;
+  ctaText: string;
+  handleClick: () => void;
 }
 
-const UserDetailsForm = ({ children }: UserDetailsForm) => {
+const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
   const { name, role, setName, setRole } = useUser();
   const [svg, setSVG] = useState<null | string>(null);
 
@@ -46,7 +48,9 @@ const UserDetailsForm = ({ children }: UserDetailsForm) => {
           <option value="po">Product Owner</option>
         </select>
       </label>
-      <div>{children}</div>
+      <div>
+        <JoinRoomBtn onClick={handleClick}>{ctaText}</JoinRoomBtn>
+      </div>
     </div>
   );
 };

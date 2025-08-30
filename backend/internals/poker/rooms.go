@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type RoomManager struct {
@@ -30,7 +30,7 @@ func GetRoomManager() *RoomManager {
 	return roomManager
 }
 
-func (rm *RoomManager) CreateNewRoom(owner User) (RoomID) {
+func (rm *RoomManager) CreateNewRoom(owner User) RoomID {
 	rm.mutex.Lock()
 	defer rm.mutex.Unlock()
 

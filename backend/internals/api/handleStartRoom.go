@@ -2,6 +2,7 @@ package api
 
 import (
 	"backend/internals/poker"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,8 @@ func handleStartRoom(ctx *gin.Context) {
 	}
 
 	roomID := roomManager.CreateNewRoom(req.Owner)
+
+	log.Println("Room started by ", req.Owner.Username)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"roomNumber": roomID,

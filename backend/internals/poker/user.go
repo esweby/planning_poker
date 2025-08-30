@@ -1,6 +1,10 @@
 package poker
 
-import "golang.org/x/net/websocket"
+import (
+	"sync"
+
+	"github.com/gorilla/websocket"
+)
 
 type Username string
 type Role string // developer, tester, po, planner
@@ -13,8 +17,10 @@ const (
 )
 
 type ConnectedUser struct {
-	User User
-	Conn *websocket.Conn
+	User  User
+	Conn  *websocket.Conn
+	Send  chan []byte
+	Mutex sync.Mutex
 }
 
 type ConnectedUsers = map[Username]*ConnectedUser

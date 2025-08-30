@@ -1,20 +1,48 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import UserDetailsForm from "../components/UserDetailsForm";
-import JoinRoomBtn from "../components/JoinRoomBtn";
 import JoinHeader from "../components/JoinHeader";
+import { useUser } from "../contexts/UserContext";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  const { name, role } = useUser();
+  const navigate = useNavigate();
+
+  const handleJoinRoom = async () => {
+    if (!name || !role) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          owner: {
+            username: name,
+            role: role,
+          },
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create room");
+
+      const room = await res.json();
+
+      navigate({ to: `/room/${room.roomNumber}` });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       <JoinHeader />
       <main className="index--main">
-        <UserDetailsForm>
-          <JoinRoomBtn onClick={() => {}}>Start Session</JoinRoomBtn>
-        </UserDetailsForm>
+        <UserDetailsForm ctaText="Start Session" handleClick={handleJoinRoom} />
       </main>
     </>
   );
