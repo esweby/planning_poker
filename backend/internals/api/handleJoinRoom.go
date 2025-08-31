@@ -27,6 +27,11 @@ func handleJoinRoom(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	
+	if !roomManager.RoomExists(req.RoomID) {
+        ctx.JSON(http.StatusNotFound, gin.H{"error": "Room not found"})
+        return
+    }
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {

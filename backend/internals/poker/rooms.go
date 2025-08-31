@@ -73,8 +73,14 @@ func (rm *RoomManager) AddUserToRoom(roomID RoomID, user User, conn *websocket.C
 	if err != nil {
 		return err
 	}
+	
+	err = room.AddUser(user, conn)
+    if err != nil {
+        return err
+    }
 
-	return room.AddUser(user, conn)
+    room.scheduleBroadcast()
+    return nil
 }
 
 func (rm *RoomManager) RemoveUserFromRoom(roomID RoomID, username Username) (RoomStatus, error) {
@@ -98,34 +104,37 @@ func (rm *RoomManager) GetSerializableRoom(roomID RoomID) (SerializableRoom, err
 }
 
 func (rm *RoomManager) cleanupRoutine() {
-	ticker := time.NewTicker(60 * time.Minute)
-	defer ticker.Stop()
+    ticker := time.NewTicker(60 * time.Minute)
+    defer ticker.Stop()
 
-	for range ticker.C {
-		rm.mutex.Lock()
-		now := time.Now()
-		roomsToRemove := make([]RoomID, 0)
+    for range ticker.C {
+        rm.mutex.Lock()
+        now := time.Now()
+        roomsToRemove := make([]RoomID, 0)
 
-		for roomID, room := range rm.rooms {
-			room.Mutex.RLock()
-			if len(room.Users) == 0 {
-				if room.EmptySince.IsZero() {
-					room.EmptySince = now
-				} else if now.Sub(room.EmptySince) > 5*time.Minute {
-					roomsToRemove = append(roomsToRemove, roomID)
-				}
-			} else {
-				room.EmptySince = time.Time{}
-			}
-			room.Mutex.RUnlock()
-		}
+        for roomID, room := range rm.rooms {
+            room.Mutex.RLock()
+            if len(room.Users) == 0 {
+                if room.EmptySince.IsZero() {
+                    room.EmptySince = now
+                } else if now.Sub(room.EmptySince) > 5*time.Minute {
+                    roomsToRemove = append(roomsToRemove, roomID)
+                }
+            } else {
+                room.EmptySince = time.Time{}
+            }
+            room.Mutex.RUnlock()
+        }
 
-		for _, roomID := range roomsToRemove {
-			delete(rm.rooms, roomID)
-			fmt.Printf("Removed empty room: %s\n", roomID)
-		}
-		rm.mutex.Unlock()
-	}
+        for _, roomID := range roomsToRemove {
+            if room, exists := rm.rooms[roomID]; exists {
+                room.Close()
+                delete(rm.rooms, roomID)
+                fmt.Printf("Removed empty room: %s\n", roomID)
+            }
+        }
+        rm.mutex.Unlock()
+    }
 }
 
 func (rm *RoomManager) GetAllRooms() map[RoomID]SerializableRoom {
