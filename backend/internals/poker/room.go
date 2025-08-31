@@ -276,44 +276,44 @@ func (r *Room) RevealVotes(revealer Username) error {
 }
 
 func (r *Room) readPump(cu *ConnectedUser) {
-    defer func() {
-        r.RemoveUser(cu.User.Username)
-        cu.Conn.Close()
-        close(cu.Send)
-    }()
+	defer func() {
+		r.RemoveUser(cu.User.Username)
+		cu.Conn.Close()
+		close(cu.Send)
+	}()
 
-    cu.Conn.SetReadLimit(maxMessageSize)
-    cu.Conn.SetReadDeadline(time.Now().Add(pongWait))
-    cu.Conn.SetPongHandler(func(string) error {
-        cu.Conn.SetReadDeadline(time.Now().Add(pongWait))
-        return nil
-    })
+	cu.Conn.SetReadLimit(maxMessageSize)
+	cu.Conn.SetReadDeadline(time.Now().Add(pongWait))
+	cu.Conn.SetPongHandler(func(string) error {
+		cu.Conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
-    for {
-        select {
-        case <-r.ctx.Done():
-            return // Room is closing
-        default:
-            _, message, err := cu.Conn.ReadMessage()
-            if err != nil {
-                if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-                    log.Printf("WebSocket error: %v", err)
-                }
-                return
-            }
+	for {
+		select {
+		case <-r.ctx.Done():
+			return // Room is closing
+		default:
+			_, message, err := cu.Conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Printf("WebSocket error: %v", err)
+				}
+				return
+			}
 
-            if err := r.handleMessage(cu, message); err != nil {
-                log.Printf("Error handling message: %v", err)
-                errorMsg := map[string]string{"error": err.Error()}
-                cu.Mutex.Lock()
-                jsonErr := cu.Conn.WriteJSON(errorMsg)
-                cu.Mutex.Unlock()
-                if jsonErr != nil {
-                    log.Printf("Error sending error message: %v", jsonErr)
-                }
-            }
-        }
-    }
+			if err := r.handleMessage(cu, message); err != nil {
+				log.Printf("Error handling message: %v", err)
+				errorMsg := map[string]string{"error": err.Error()}
+				cu.Mutex.Lock()
+				jsonErr := cu.Conn.WriteJSON(errorMsg)
+				cu.Mutex.Unlock()
+				if jsonErr != nil {
+					log.Printf("Error sending error message: %v", jsonErr)
+				}
+			}
+		}
+	}
 }
 
 func (r *Room) writePump(cu *ConnectedUser) {
@@ -452,13 +452,13 @@ func (r *Room) broadcastState() {
 }
 
 func (r *Room) Close() {
-    r.cancelFunc()
-    
-    r.Mutex.Lock()
-    defer r.Mutex.Unlock()
-    
-    for _, user := range r.Users {
-        user.Conn.Close()
-        close(user.Send)
-    }
+	r.cancelFunc()
+
+	r.Mutex.Lock()
+	defer r.Mutex.Unlock()
+
+	for _, user := range r.Users {
+		user.Conn.Close()
+		close(user.Send)
+	}
 }
