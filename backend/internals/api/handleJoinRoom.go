@@ -11,6 +11,7 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	
 	// IMPORTANT: in production you should check origin properly
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -18,20 +19,9 @@ var upgrader = websocket.Upgrader{
 }
 
 func handleJoinRoom(ctx *gin.Context) {
-	var req struct {
-		User   poker.User   `json:"user"`
-		RoomID poker.RoomID `json:"roomId"`
-	}
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if !roomManager.RoomExists(req.RoomID) {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Room not found"})
-		return
-	}
+	roomId := ctx.Param("roomId")
+	username := ctx.Query("username")
+	role := ctx.Query("role")
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
@@ -39,5 +29,10 @@ func handleJoinRoom(ctx *gin.Context) {
 		return
 	}
 
-	roomManager.AddUserToRoom(req.RoomID, req.User, conn)
+	user := poker.User{
+		Username: poker.Username(username),
+		Role: poker.Role(role),
+	}
+
+	roomManager.AddUserToRoom(roomId, user, conn)
 }

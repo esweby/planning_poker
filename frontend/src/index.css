@@ -105,3 +105,16 @@ body {
 .button--start-session:hover .image--start-spade {
   transform: rotate(450deg);
 }
+
+/* Room title */
+
+.title--room {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image--avatar-room-title {
+  width: 30px;
+  height: 30px;
+}

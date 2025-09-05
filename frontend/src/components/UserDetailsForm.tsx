@@ -1,6 +1,6 @@
 import { useUser } from "../contexts/UserContext";
 import avatar from "animal-avatar-generator";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import JoinRoomBtn from "./JoinRoomBtn";
 
 interface UserDetailsForm {

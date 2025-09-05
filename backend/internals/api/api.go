@@ -26,7 +26,8 @@ func Start() {
 	api := router.Group("/api")
 
 	api.POST("/", handleStartRoom)
-	api.POST("/join", handleJoinRoom)
+	api.GET("/check/:roomId", handleCheckRoom)
+	api.GET("/join/:roomId", handleJoinRoom)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("%s", err)

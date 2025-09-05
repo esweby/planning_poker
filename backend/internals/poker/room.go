@@ -61,6 +61,7 @@ func generateRoom(owner User, roomID RoomID) *Room {
 		Users: make(ConnectedUsers),
 		Game: Game{
 			Title:    "",
+			Status:   StatusWaiting,
 			Voted:    make(Voted),
 			Votes:    make(Votes),
 			Guesses:  make(Guesses),
@@ -102,6 +103,7 @@ func (r *Room) ToSerializable() SerializableRoom {
 
 	game := Game{
 		Title:    r.Game.Title,
+		Status:	  r.Game.Status,
 		Voted:    voted,
 		Votes:    votes,
 		Guesses:  guesses,
