@@ -9,12 +9,14 @@ interface UserDetailsForm {
 }
 
 const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
-  const { name, role, setName, setRole } = useUser();
+  const { name, role, seed, setName, setRole, setSeed } = useUser();
   const [svg, setSVG] = useState<null | string>(null);
 
   useEffect(() => {
-    setSVG(avatar(name, { size: 150, blackout: false }));
-  }, [name]);
+    setSVG(
+      avatar(seed.length > 0 ? seed : name, { size: 150, blackout: false })
+    );
+  }, [seed, name]);
 
   return (
     <div className="container--user-details">
@@ -33,6 +35,16 @@ const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
           className="input--name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+      </label>
+      <label className="label--user-details">
+        <span>Avatar Seed</span>
+        <input
+          type="text"
+          placeholder="Type till you like your avatar"
+          className="input--name"
+          value={seed}
+          onChange={(e) => setSeed(e.target.value)}
         />
       </label>
       <label className="label--user-details">

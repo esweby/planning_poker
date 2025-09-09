@@ -2,7 +2,6 @@ package poker
 
 import "encoding/json"
 
-// Add these to your types
 type MessageType string
 
 const (

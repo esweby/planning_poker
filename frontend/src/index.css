@@ -108,6 +108,12 @@ body {
 
 /* Room title */
 
+.header--title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .title--room {
   display: flex;
   align-items: center;
@@ -117,4 +123,20 @@ body {
 .image--avatar-room-title {
   width: 30px;
   height: 30px;
+}
+
+.button--copy-invite {
+  padding: 0.5rem 0.75rem;
+  background-color: #fff;
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: all ease 200ms;
+}
+
+.button--copy-invite:hover {
+  box-shadow: 0 0 0 0 #fff;
+}
+
+.room--game-status {
+  text-transform: capitalize;
 }

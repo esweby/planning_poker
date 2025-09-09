@@ -9,46 +9,59 @@ export const Route = createFileRoute("/room/$roomNumber")({
 });
 
 function Room() {
-  const [roomDetails, setRoomDetails] = useState({ owner: "" });
-  const [gameDetails, setGameDetails] = useState({});
+  const [data, setData] = useState<Message | null>();
   const { roomNumber } = Route.useParams();
   const { name, role } = useUser();
-  const { isConnected, messages, sendMessage } = useWebSocket(
-    `ws://localhost:8080/api/join/${roomNumber}?username=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}`
-  );
+
+  const { isConnected, messages, connect, closeConnection, sendMessage } =
+    useWebSocket();
+
+  useEffect(() => {
+    if (!roomNumber || !name || !role) return;
+
+    connect(
+      `ws://localhost:8080/api/join/${roomNumber}?username=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}&seed=${encodeURIComponent(role)}`
+    );
+
+    return () => {
+      closeConnection();
+    };
+  }, [roomNumber, name, role]);
 
   useEffect(() => {
     if (!isConnected || messages.length === 0) {
       return;
     }
-
-    setRoomDetails({
-      owner: messages[0].payload.owner,
-    });
-
-    setGameDetails({
-      ...messages[0].payload.game,
-    });
+    console.log(messages);
+    setData(messages[0].payload);
   }, [isConnected, messages]);
 
-  console.log({ messages });
-  console.log({ sendMessage });
+  console.log(data);
+
+  if (!data) return;
 
   return (
-    <main>
-      <h2 className="title--room">
-        <img
-          src={`data:image/svg+xml;utf8,${encodeURIComponent(avatar(name, { size: 25, blackout: false }))}`}
-          className="image--avatar-room-title"
-          alt="avatar"
-        />{" "}
-        {roomDetails.owner} Planning Poker
-      </h2>
-      {name === roomDetails.owner && (
-        <header>
-          Status: {gameDetails.status} <button>Play</button>
-        </header>
-      )}
-    </main>
+    <div>
+      <header>
+        <section className="header--title">
+          <h2 className="title--room">
+            <img
+              src={`data:image/svg+xml;utf8,${encodeURIComponent(avatar(name, { size: 25, blackout: false }))}`}
+              className="image--avatar-room-title"
+              alt="avatar"
+            />{" "}
+            {data.owner} Planning Poker
+          </h2>
+          <button className="button--copy-invite">Copy Invite Link</button>
+        </section>
+        {name === data.owner && (
+          <>
+            Status:{" "}
+            <span className="room--game-status">{data.game.status}</span>
+          </>
+        )}
+      </header>
+      <main></main>
+    </div>
   );
 }

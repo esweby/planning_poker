@@ -3,6 +3,7 @@ package poker
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -43,6 +44,7 @@ func (rm *RoomManager) CreateNewRoom(owner User) RoomID {
 		}
 	}
 
+	log.Printf("- Room (%s): %s created room", roomID, owner.Username)
 	room := generateRoom(owner, roomID)
 	rm.rooms[roomID] = room
 
@@ -79,6 +81,7 @@ func (rm *RoomManager) AddUserToRoom(roomID RoomID, user User, conn *websocket.C
 		return err
 	}
 
+	log.Printf("- Room (%s): %s joined", roomID, user.Username)
 	room.scheduleBroadcast()
 	return nil
 }
@@ -89,8 +92,8 @@ func (rm *RoomManager) RemoveUserFromRoom(roomID RoomID, username Username) (Roo
 		return RoomEmpty, err
 	}
 
+	log.Printf("- Room (%s): %s removed", roomID, username)
 	status := room.RemoveUser(username)
-
 	return status, nil
 }
 

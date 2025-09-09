@@ -5,8 +5,10 @@ export type Role = "developer" | "tester" | "po" | "";
 type UserContextType = {
   name: string;
   role: Role;
+  seed: string;
   setName: (name: string) => void;
   setRole: (role: Role) => void;
+  setSeed: (see: string) => void;
   clear: () => void;
 };
 
@@ -33,16 +35,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
+  const [seed, setSeedState] = useState<string>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? (JSON.parse(raw).seed ?? "") : "";
+    } catch {
+      return "";
+    }
+  });
+
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, role }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, role, seed }));
   }, [name, role]);
 
   const setName = (n: string) => setNameState(n);
   const setRole = (r: Role) => setRoleState(r);
+  const setSeed = (s: string) => setSeedState(s);
 
   const clear = () => {
     setNameState("");
     setRoleState("");
+    setSeedState("");
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -51,7 +64,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ name, role, setName, setRole, clear }}>
+    <UserContext.Provider
+      value={{ name, role, seed, setName, setRole, setSeed, clear }}
+    >
       {children}
     </UserContext.Provider>
   );

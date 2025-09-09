@@ -28,6 +28,7 @@ type ConnectedUsers = map[Username]*ConnectedUser
 type User struct {
 	Username Username `json:"username"`
 	Role     Role     `json:"role"`
+	Seed 	 string   `json:"seed"`
 	Score    int32    `json:"score"`
 }
 
