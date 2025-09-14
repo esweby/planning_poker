@@ -1,7 +1,7 @@
 import { useUser } from "../contexts/UserContext";
-import avatar from "animal-avatar-generator";
-import { useEffect, useState } from "react";
 import JoinRoomBtn from "./JoinRoomBtn";
+import Icon from "./atoms/icon/Icon";
+import Container from "./atoms/containers/Container";
 
 interface UserDetailsForm {
   ctaText: string;
@@ -10,23 +10,18 @@ interface UserDetailsForm {
 
 const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
   const { name, role, seed, setName, setRole, setSeed } = useUser();
-  const [svg, setSVG] = useState<null | string>(null);
-
-  useEffect(() => {
-    setSVG(
-      avatar(seed.length > 0 ? seed : name, { size: 150, blackout: false })
-    );
-  }, [seed, name]);
 
   return (
     <div className="container--user-details">
-      {svg && (
-        <img
-          src={`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`}
-          className="image--avatar-preview"
-          alt="avatar"
-        />
-      )}
+      <Container
+        type="header"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        margin="0 0 2rem"
+      >
+        <Icon name={name} seed={seed} size="huge" />
+      </Container>
       <label className="label--user-details">
         <span>Name</span>
         <input
@@ -55,9 +50,10 @@ const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
           onChange={(e) => setRole(e.target.value as any)}
         >
           <option>Choose your role</option>
-          <option value="developer">Developer</option>
-          <option value="tester">Tester</option>
-          <option value="po">Product Owner</option>
+          <option value="Delivery Lead">Delivery Lead</option>
+          <option value="Product Owner">Product Owner</option>
+          <option value="Developer">Developer</option>
+          <option value="Tester">Tester</option>
         </select>
       </label>
       <div>

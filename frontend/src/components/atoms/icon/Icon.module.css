@@ -1,0 +1,21 @@
+.icon {
+  height: auto;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.sm {
+  width: 1rem;
+}
+
+.md {
+  width: 2.5rem;
+}
+
+.lg {
+  width: 5rem;
+}
+
+.huge {
+  width: 10rem;
+}

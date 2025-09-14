@@ -56,6 +56,7 @@ func (rm *RoomManager) GetRoom(roomID RoomID) (*Room, error) {
 	defer rm.mutex.RUnlock()
 
 	room, exists := rm.rooms[roomID]
+	log.Printf("-- GetRoom %s - exists %t", roomID, exists)
 	if !exists {
 		return nil, errors.New("room not found")
 	}

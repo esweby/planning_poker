@@ -1,0 +1,71 @@
+.container {
+  padding: 1.5rem 0;
+}
+
+.cta {
+  font-size: 1.2rem;
+  font-weight: 300;
+}
+
+.votesContainer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.voteBtn {
+  height: 30px;
+  width: 30px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.chosen {
+  background-color: lightgreen;
+}
+
+.votedContainer {
+  padding: 1rem 0;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+}
+
+.votedTitle {
+  font-size: 1.2rem;
+  font-weight: 300;
+  margin: 1rem 0;
+}
+
+.voteList {
+  list-style: none;
+}
+
+.voteList li {
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.image {
+  display: inline-block;
+  margin-right: 10px;
+  width: 40px;
+  height: auto;
+}
+
+.voted {
+  color: green;
+}
+
+.notVoted {
+  color: red;
+}
+
+.votedTitle {
+  margin-bottom: 0.5rem;
+}
+
+.votedStats {
+  list-style: none;
+}

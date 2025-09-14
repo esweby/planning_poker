@@ -22,6 +22,7 @@ func handleJoinRoom(ctx *gin.Context) {
 	roomId := ctx.Param("roomId")
 	username := ctx.Query("username")
 	role := ctx.Query("role")
+	seed := ctx.Query("seed")
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
@@ -32,6 +33,7 @@ func handleJoinRoom(ctx *gin.Context) {
 	user := poker.User{
 		Username: poker.Username(username),
 		Role: poker.Role(role),
+		Seed: seed,
 	}
 
 	roomManager.AddUserToRoom(roomId, user, conn)

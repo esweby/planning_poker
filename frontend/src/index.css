@@ -108,6 +108,10 @@ body {
 
 /* Room title */
 
+.room--header {
+  margin-bottom: 2rem;
+}
+
 .header--title {
   display: flex;
   justify-content: space-between;
@@ -126,9 +130,10 @@ body {
 }
 
 .button--copy-invite {
+  font-size: 0.8rem;
   padding: 0.5rem 0.75rem;
   background-color: #fff;
-  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.7);
   cursor: pointer;
   transition: all ease 200ms;
 }
@@ -139,4 +144,40 @@ body {
 
 .room--game-status {
   text-transform: capitalize;
+}
+
+.room--main-container {
+  display: grid;
+  grid-template-columns: 1fr 150px;
+}
+
+.users--list-title {
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.users--list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+
+.image--users-list-item {
+  width: 50px;
+}
+
+.title--user-list-item {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.role--user-list-item {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.game--status-title {
+  font-weight: 500;
 }

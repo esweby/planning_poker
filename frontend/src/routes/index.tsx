@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import UserDetailsForm from "../components/UserDetailsForm";
 import JoinHeader from "../components/JoinHeader";
 import { useUser } from "../contexts/UserContext";
+import Title from "../components/atoms/title/Title";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -40,7 +41,9 @@ function Index() {
 
   return (
     <>
-      <JoinHeader />
+      <Title level={1} size="lg" weight="bold">
+        Planning Poker
+      </Title>
       <main className="index--main">
         <UserDetailsForm ctaText="Start Session" handleClick={handleJoinRoom} />
       </main>

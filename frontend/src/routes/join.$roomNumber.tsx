@@ -18,19 +18,15 @@ function Join() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/", {
-        method: "POST",
+      const res = await fetch(`http://localhost:8080/api/check/${roomNumber}`, {
+        method: "GET",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roomNumber: roomNumber,
-        }),
       });
 
+      console.log(res);
       if (!res.ok) throw new Error("Failed to find room");
 
-      const room = await res.json();
-
-      navigate({ to: `/room/${room.roomNumber}` });
+      navigate({ to: `/room/${roomNumber}` });
     } catch (error) {
       console.error(error);
     }

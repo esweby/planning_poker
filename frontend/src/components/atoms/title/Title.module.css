@@ -1,0 +1,31 @@
+.title {
+  margin-bottom: 1rem;
+}
+
+.sm {
+  font-size: 0.9rem;
+}
+
+.md {
+  font-size: 1.3rem;
+}
+
+.lg {
+  font-size: 1.75rem;
+}
+
+.xl {
+  font-size: 2rem;
+}
+
+.light {
+  font-weight: 300;
+}
+
+.normal {
+  font-weight: 400;
+}
+
+.bold {
+  font-weight: 600;
+}

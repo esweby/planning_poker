@@ -10,10 +10,10 @@ type Username string
 type Role string // developer, tester, po, planner
 
 const (
-	Developer = "developer"
-	Tester    = "tester"
-	PO        = "po"
-	Planner   = "planner"
+	Developer = "Developer"
+	Tester    = "Tester"
+	PO        = "Product Owner"
+	Planner   = "Delivery Lead"
 )
 
 type ConnectedUser struct {

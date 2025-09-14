@@ -1,5 +1,5 @@
 type User = {
-  name: string;
+  username: string;
   role: string;
   seed: string;
 };
@@ -8,14 +8,14 @@ type Game = {
   title: string;
   revealed: boolean;
   status: "waiting" | "playing" | "finished";
-  guesses: { [string]: { guessingOn: string; prediction: string } };
-  voted: { [string]: boolean };
-  votes: { [string]: string };
+  guesses: { [k: string]: { guessingOn: string; prediction: string } };
+  voted: { [k: string]: boolean };
+  votes: { [k: string]: string };
 };
 
 type Message = {
   id: string;
   owner: string;
-  users: { string: User };
+  users: { [k: string]: User };
   game: Game;
 };
