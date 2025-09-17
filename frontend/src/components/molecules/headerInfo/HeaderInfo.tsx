@@ -1,4 +1,5 @@
-import styles from "./HeaderInfo.module.css";
+import Container from "../../atoms/containers/Container";
+import Title from "../../atoms/title/Title";
 
 const HeaderInfo = ({ owner, roomId }: { owner: string; roomId: string }) => {
   const handleCopyInvite = () => {
@@ -13,12 +14,14 @@ const HeaderInfo = ({ owner, roomId }: { owner: string; roomId: string }) => {
   };
 
   return (
-    <section className={styles.container}>
-      <h2>{owner}'s room</h2>
+    <Container type="section" display="flex" justifyContent="between">
+      <Title level={2} weight="bold" size="lg">
+        {owner}'s room
+      </Title>
       <button className="button--copy-invite" onClick={handleCopyInvite}>
         Copy Invite Link
       </button>
-    </section>
+    </Container>
   );
 };
 

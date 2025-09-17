@@ -1,5 +1,13 @@
+.block {
+  display: block;
+}
+
 .flex {
   display: flex;
+}
+
+.grid {
+  display: grid;
 }
 
 .justify-start {
@@ -14,7 +22,7 @@
   justify-content: center;
 }
 
-.justify-center {
+.justify-between {
   justify-content: space-between;
 }
 

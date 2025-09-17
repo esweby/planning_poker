@@ -7,18 +7,29 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 export interface TitleProps {
   level: Level;
-  children: string;
+  children: string[] | string;
   weight: Weight;
   size: Size;
+  marginOff?: boolean;
+  className?: string;
 }
 
 const Title = forwardRef(
   (props: TitleProps, ref: ForwardedRef<HTMLElement>) => {
-    const { level, children, weight, size } = props;
+    const {
+      level,
+      children,
+      weight,
+      size,
+      marginOff = false,
+      className,
+    } = props;
 
     const Tag: any = `h${level}`;
 
-    let classes = constructClasses(size, weight);
+    let classes = `${cl.title} ${cl[size]} ${cl[weight]}`;
+    if (marginOff) classes += ` ${cl.noMargin}`;
+    if (className) classes += ` ${className}`;
 
     return (
       <Tag ref={ref} className={classes}>
@@ -27,9 +38,5 @@ const Title = forwardRef(
     );
   }
 );
-
-function constructClasses(size: Size, weight: Weight) {
-  return `${cl.title} ${cl[size]} ${cl[weight]}`;
-}
 
 export default Title;

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import UserDetailsForm from "../components/UserDetailsForm";
+import UserDetailsForm from "../components/organisms/userDetailsForm/UserDetailsForm";
 import JoinHeader from "../components/JoinHeader";
 import { useUser } from "../contexts/UserContext";
 

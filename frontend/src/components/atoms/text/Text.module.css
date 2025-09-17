@@ -1,0 +1,27 @@
+.sm {
+  font-size: 0.8rem;
+}
+
+.nm {
+  font-size: 1rem;
+}
+
+.lg {
+  font-size: 1.2rem;
+}
+
+.xl {
+  font-size: 1.4rem;
+}
+
+.light {
+  font-weight: 300;
+}
+
+.normal {
+  font-weight: 400;
+}
+
+.bold {
+  font-weight: 600;
+}

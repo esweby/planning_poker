@@ -4,6 +4,10 @@
   margin: 0 auto;
 }
 
+.noMargin {
+  margin: 0;
+}
+
 .sm {
   width: 1rem;
 }

@@ -1,0 +1,15 @@
+.notVoted {
+  color: red;
+}
+
+.voted {
+  color: green;
+}
+
+.marginRight {
+  margin-right: 1rem;
+}
+
+.vote {
+  color: green;
+}

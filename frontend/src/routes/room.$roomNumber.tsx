@@ -2,12 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useUser } from "../contexts/UserContext";
 import { useWebSocket } from "../hooks/useWebsocket";
 import { useEffect, useState } from "react";
-import ListUserItem from "../components/room/ListUserItem";
-import HeaderInfo from "../components/room/HeaderInfo";
+import HeaderInfo from "../components/molecules/headerInfo/HeaderInfo";
 import OwnerControls from "../components/room/OwnerControls";
-import WaitingScreen from "../components/room/screens/WaitingScreen";
-import PlayingScreen from "../components/room/screens/PlayingScreen";
-import FinishedStyles from "../components/room/screens/FinishedScreen";
+import WaitingScreen from "../components/templates/waitingScreen/WaitingScreen";
+import PlayingScreen from "../components/templates/playingScreen/PlayingScreen";
+import FinishedStyles from "../components/templates/finishedScreen/FinishedScreen";
 
 export const Route = createFileRoute("/room/$roomNumber")({
   component: Room,

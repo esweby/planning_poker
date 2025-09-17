@@ -2,6 +2,10 @@
   margin-bottom: 1rem;
 }
 
+.noMargin {
+  margin: 0;
+}
+
 .sm {
   font-size: 0.9rem;
 }

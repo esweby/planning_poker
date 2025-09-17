@@ -7,18 +7,23 @@ export interface IconProps {
   size: Size;
   seed?: string;
   name: string;
+  centered?: boolean;
+  className?: string;
 }
 
 const Icon = (props: IconProps) => {
-  const { size, seed, name } = props;
+  const { size, seed, name, centered = true, className } = props;
 
   const seedString = (seed && seed.length > 0 ? seed : name) || "base";
+
+  let classes = `${cl.icon} ${cl[size]}`;
+  if (!centered) classes += ` ${cl.noMargin}`;
+  if (className) classes += ` ${className}`;
 
   return (
     <img
       src={`data:image/svg+xml;utf8,${encodeURIComponent(avatar(seedString, { size: 150, blackout: false }))}`}
-      className={`
-        ${cl.icon} ${cl[size]}`}
+      className={classes}
       alt="avatar"
     />
   );

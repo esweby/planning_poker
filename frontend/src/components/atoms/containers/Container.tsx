@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import cl from "./Container.module.css";
 
-type Type = "div" | "header" | "main" | "section";
+type Type = "div" | "header" | "main" | "section" | "ul" | "li";
 type Display = "block" | "flex" | "grid";
 type JustifyContent = "start" | "end" | "center" | "between";
 type AlignItems = "center";
@@ -14,6 +14,7 @@ export interface ContainerProps {
   alignItems?: AlignItems;
   margin?: string;
   padding?: string;
+  className?: string;
 }
 
 const Container = (props: ContainerProps) => {
@@ -25,6 +26,7 @@ const Container = (props: ContainerProps) => {
     alignItems,
     margin = "",
     padding = "",
+    className,
   } = props;
 
   let classes = `${cl[display]}`;
@@ -34,6 +36,8 @@ const Container = (props: ContainerProps) => {
   }
 
   const Tag: any = `${type}`;
+
+  if (className) classes += ` ${className}`;
 
   return (
     <Tag
