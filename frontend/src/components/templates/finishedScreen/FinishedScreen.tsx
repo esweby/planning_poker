@@ -43,7 +43,7 @@ const FinishedStyles = ({ data }: { data: Message }) => {
         </Container>
         <Container display="block" type="section">
           <Title level={3} size="md" weight="bold">
-            Voted Votes
+            Voted &nbsp;&nbsp;Votes
           </Title>
           <Container display="block" type="ul" className={cl.voteList}>
             {Object.keys(results)

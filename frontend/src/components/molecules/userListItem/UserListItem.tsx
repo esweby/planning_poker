@@ -18,9 +18,9 @@ const UserListItem = ({
   showVote: boolean;
   vote: string;
 }) => {
-  let classes = "";
-  if (showVoted && !hasVoted) classes = cl.notVoted;
-  if (showVoted && hasVoted) classes = cl.voted;
+  let classes = cl.marginRight;
+  if (showVoted && !hasVoted) classes += ` ${cl.notVoted}`;
+  if (showVoted && hasVoted) classes += ` ${cl.voted}`;
 
   return (
     <Container
@@ -42,7 +42,7 @@ const UserListItem = ({
         weight="bold"
         size="md"
         marginOff={true}
-        className={cl.marginRight}
+        className={classes}
       >
         {user.username}
       </Title>

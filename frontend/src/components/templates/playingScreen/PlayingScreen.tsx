@@ -1,6 +1,9 @@
 import { useUser } from "../../../contexts/UserContext";
 import avatar from "animal-avatar-generator";
 import styles from "./PlayingScreen.module.css";
+import Title from "../../atoms/title/Title";
+import Container from "../../atoms/containers/Container";
+import UserList from "../../organisms/userLists/UserList";
 
 const voteValues = ["0", "1", "2", "3", "6", "8", "10", "12", "?"];
 
@@ -20,13 +23,17 @@ const PlayingScreen = ({
   const makeVote = (vote: string) =>
     sendMessage({ type: "vote", payload: { vote: vote } });
 
-  console.log(votes);
-  console.log(data.users);
-
   return (
-    <main className={styles.container}>
-      <section>
-        <h2 className={styles.cta}>Hey {currUser.username} make your vote!</h2>
+    <Container
+      display="block"
+      type="main"
+      className={styles.container}
+      padding="1.5rem 0"
+    >
+      <Container display="block" type="section">
+        <Title level={2} size="lg" weight="bold">
+          Hey {currUser.username} make your vote!
+        </Title>
         <div className={styles.votesContainer}>
           {voteValues.map((v) => {
             let classes = `${styles.voteBtn}`;
@@ -41,24 +48,12 @@ const PlayingScreen = ({
             );
           })}
         </div>
-      </section>
-      <h2 className={styles.votedTitle}>Voted</h2>
+      </Container>
+      <Title level={2} size="lg" weight="bold">
+        Voted
+      </Title>
       <section className={styles.votedContainer}>
-        <ul className={styles.voteList}>
-          {Object.keys(data.users).map((user: string) => (
-            <li
-              key={`userVote-${user}`}
-              className={votes?.[user] ? styles.voted : styles.notVoted}
-            >
-              <img
-                src={`data:image/svg+xml;utf8,${encodeURIComponent(avatar(data.users[user]?.seed ?? data.users[user].username, { size: 40, blackout: false }))}`}
-                className={styles.image}
-                alt="avatar"
-              />
-              {user}
-            </li>
-          ))}
-        </ul>
+        <UserList data={data} showVoted={true} />
         <div>
           <ul className={styles.votedStats}>
             <li>
@@ -144,7 +139,7 @@ const PlayingScreen = ({
           </ul>
         </div>
       </section>
-    </main>
+    </Container>
   );
 };
 

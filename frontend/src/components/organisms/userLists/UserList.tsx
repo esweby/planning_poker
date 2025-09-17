@@ -16,7 +16,7 @@ const UserList = ({
   return (
     <Container type="ul" display="block" className={cl.noList}>
       {Object.keys(data.users).map((username: string) => {
-        let hasVoted = showVoted ? data.game.voted[username] : false;
+        let hasVoted = data.game.voted[username] || false;
         let vote = data.game.votes[username] || "0";
 
         return (
