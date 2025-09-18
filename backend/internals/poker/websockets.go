@@ -102,17 +102,6 @@ func (r *Room) handleMessage(cu *ConnectedUser, message []byte) error {
 		}
 		return r.SubmitVote(cu.User.Username, payload.Vote)
 
-	case MessageTypeGuess:
-		var payload GuessPayload
-		if err := json.Unmarshal(wsMessage.Payload, &payload); err != nil {
-			return fmt.Errorf("invalid guess payload: %v", err)
-		}
-		guess := Guess{
-			GuessingOn: payload.GuessingOn,
-			Prediction: payload.Prediction,
-		}
-		return r.MakeGuess(cu.User.Username, guess)
-
 	case MessageTypeStartVoting:
 		if cu.User.Username != r.Owner {
 			return errors.New("only room owner can start voting")

@@ -62,7 +62,6 @@ func generateRoom(owner User, roomID RoomID) *Room {
 			Status:   StatusWaiting,
 			Voted:    make(Voted),
 			Votes:    make(Votes),
-			Guesses:  make(Guesses),
 			Revealed: false,
 		},
 		ctx:        ctx,
@@ -95,17 +94,11 @@ func (r *Room) ToSerializable() SerializableRoom {
 		votes[k] = v
 	}
 
-	guesses := make(Guesses)
-	for k, v := range r.Game.Guesses {
-		guesses[k] = v
-	}
-
 	game := Game{
 		Title:    r.Game.Title,
 		Status:	  r.Game.Status,
 		Voted:    voted,
 		Votes:    votes,
-		Guesses:  guesses,
 		Revealed: r.Game.Revealed,
 	}
 
@@ -147,48 +140,10 @@ func (r *Room) RemoveUser(username Username) RoomStatus {
 	delete(r.Users, username)
 	delete(r.Game.Voted, username)
 	delete(r.Game.Votes, username)
-	delete(r.Game.Guesses, username)
 
 	if len(r.Users) == 0 {
 		r.EmptySince = time.Now()
 		return RoomEmpty
-	}
-
-	if username == r.Owner {
-		var firstDeveloper Username
-		var firstTester Username
-		var firstPO Username
-		var firstPlanner Username
-
-		r.Owner = ""
-
-		for _, user := range r.Users {
-			userRole := user.User.Role
-
-			if userRole == Developer && firstDeveloper == "" {
-				firstDeveloper = user.User.Username
-			} else if userRole == Tester && firstTester == "" {
-				firstTester = user.User.Username
-			} else if userRole == PO && firstPO == "" {
-				firstPO = user.User.Username
-			} else if userRole == Planner && firstPlanner == "" {
-				firstPlanner = user.User.Username
-			}
-
-			if len(firstDeveloper) > 0 && len(firstTester) > 0 && len(firstPO) > 0 && len(firstPlanner) > 0 {
-				break
-			}
-		}
-
-		if len(firstPlanner) > 0 {
-			r.Owner = firstPlanner
-		} else if len(firstPO) > 0 {
-			r.Owner = firstPO
-		} else if len(firstDeveloper) > 0 {
-			r.Owner = firstDeveloper
-		} else if len(firstTester) > 0 {
-			r.Owner = firstTester
-		}
 	}
 
 	go r.scheduleBroadcast()
@@ -201,7 +156,6 @@ func (r *Room) ResetVoting() {
 
 	r.Game.Voted = make(Voted)
 	r.Game.Votes = make(Votes)
-	r.Game.Guesses = make(Guesses)
 	r.Game.Revealed = false
 	r.Game.Status = StatusWaiting
 
@@ -231,44 +185,12 @@ func (r *Room) SubmitVote(username Username, vote VoteValue) error {
 	return nil
 }
 
-func (r *Room) MakeGuess(username Username, guess Guess) error {
-	r.Mutex.Lock()
-	defer r.Mutex.Unlock()
-
-	if r.Game.Status != StatusPlaying {
-		return fmt.Errorf("game is not in progress")
-	}
-
-	if _, ok := r.Users[guess.GuessingOn]; !ok {
-		return fmt.Errorf("user you're guessing on is not currently in the game")
-	}
-
-	if username == guess.GuessingOn {
-		return fmt.Errorf("you cannot place a bet on yourself")
-	}
-
-	r.Game.Guesses[username] = guess
-
-	go r.scheduleBroadcast()
-	return nil
-}
-
 func (r *Room) RevealVotes(revealer Username) error {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
 	if revealer != r.Owner {
 		return fmt.Errorf("only game owner can reveal votes")
-	}
-
-	for username, guess := range r.Game.Guesses {
-		if r.Game.Votes[guess.GuessingOn] == guess.Prediction {
-			if user, exists := r.Users[username]; exists {
-				user.Mutex.Lock()
-				user.User.Score += 5
-				user.Mutex.Unlock()
-			}
-		}
 	}
 
 	r.Game.Revealed = true

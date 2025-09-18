@@ -8,20 +8,13 @@ const (
 	StatusFinished = "finished"
 )
 
-type Guess struct {
-	GuessingOn Username  `json:"guessingOn"`
-	Prediction VoteValue `json:"prediction"`
-}
-
 type Voted = map[Username]bool
 type Votes = map[Username]VoteValue
-type Guesses = map[Username]Guess
 
 type Game struct {
 	Title    string  `json:"title"`
 	Status   Status  `json:"status"`
 	Voted    Voted   `json:"voted"`
 	Votes    Votes   `json:"votes"`
-	Guesses  Guesses `json:"guesses"`
 	Revealed bool    `json:"revealed"`
 }
