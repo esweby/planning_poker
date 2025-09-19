@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HelloWorldRouteImport } from './routes/helloWorld'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RoomRoomNumberRouteImport } from './routes/room.$roomNumber'
 import { Route as JoinRoomNumberRouteImport } from './routes/join.$roomNumber'
 
+const HelloWorldRoute = HelloWorldRouteImport.update({
+  id: '/helloWorld',
+  path: '/helloWorld',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,52 @@ const JoinRoomNumberRoute = JoinRoomNumberRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/helloWorld': typeof HelloWorldRoute
   '/join/$roomNumber': typeof JoinRoomNumberRoute
   '/room/$roomNumber': typeof RoomRoomNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/helloWorld': typeof HelloWorldRoute
   '/join/$roomNumber': typeof JoinRoomNumberRoute
   '/room/$roomNumber': typeof RoomRoomNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/helloWorld': typeof HelloWorldRoute
   '/join/$roomNumber': typeof JoinRoomNumberRoute
   '/room/$roomNumber': typeof RoomRoomNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/join/$roomNumber' | '/room/$roomNumber'
+  fullPaths: '/' | '/helloWorld' | '/join/$roomNumber' | '/room/$roomNumber'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/join/$roomNumber' | '/room/$roomNumber'
-  id: '__root__' | '/' | '/join/$roomNumber' | '/room/$roomNumber'
+  to: '/' | '/helloWorld' | '/join/$roomNumber' | '/room/$roomNumber'
+  id:
+    | '__root__'
+    | '/'
+    | '/helloWorld'
+    | '/join/$roomNumber'
+    | '/room/$roomNumber'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HelloWorldRoute: typeof HelloWorldRoute
   JoinRoomNumberRoute: typeof JoinRoomNumberRoute
   RoomRoomNumberRoute: typeof RoomRoomNumberRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/helloWorld': {
+      id: '/helloWorld'
+      path: '/helloWorld'
+      fullPath: '/helloWorld'
+      preLoaderRoute: typeof HelloWorldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +109,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HelloWorldRoute: HelloWorldRoute,
   JoinRoomNumberRoute: JoinRoomNumberRoute,
   RoomRoomNumberRoute: RoomRoomNumberRoute,
 }
