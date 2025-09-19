@@ -12,9 +12,7 @@ function Index() {
   const navigate = useNavigate();
 
   const handleJoinRoom = async () => {
-    if (!name || !role) {
-      return;
-    }
+    if (!name || !role) return;
 
     try {
       const res = await fetch("http://localhost:8080/api/", {

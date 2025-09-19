@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import UserDetailsForm from "../components/organisms/userDetailsForm/UserDetailsForm";
-import JoinHeader from "../components/JoinHeader";
 import { useUser } from "../contexts/UserContext";
+import Container from "../components/atoms/containers/Container";
+import Title from "../components/atoms/title/Title";
 
 export const Route = createFileRoute("/join/$roomNumber")({
   component: Join,
@@ -13,9 +14,7 @@ function Join() {
   const { roomNumber } = Route.useParams();
 
   const handleJoinRoom = async () => {
-    if (!name || !role) {
-      return;
-    }
+    if (!name || !role) return;
 
     try {
       const res = await fetch(`http://localhost:8080/api/check/${roomNumber}`, {
@@ -34,10 +33,17 @@ function Join() {
 
   return (
     <>
-      <JoinHeader />
-      <main className="index--main">
+      <Title level={1} weight="bold" size="xl">
+        Planning Poker
+      </Title>
+      <Container
+        display="flex"
+        type="main"
+        justifyContent="center"
+        padding="4rem 0 0"
+      >
         <UserDetailsForm ctaText="Join Room" handleClick={handleJoinRoom} />
-      </main>
+      </Container>
     </>
   );
 }

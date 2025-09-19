@@ -10,23 +10,6 @@ body {
   font-size: 16px;
 }
 
-.container {
-  width: 100%;
-  max-width: 800px;
-  margin: 2rem auto 0;
-}
-
-.index--header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header--link {
-  text-decoration: none;
-  color: #000;
-}
-
 .container--user-details {
   padding: 2rem;
   max-width: 320px;
@@ -66,13 +49,6 @@ body {
   display: block;
   padding: 0.3rem 0.5rem;
   border-radius: 0.25rem;
-}
-
-.index--main {
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  padding-top: 4rem;
 }
 
 .button--start-session {

@@ -50,7 +50,6 @@ function Room() {
   }, [isConnected, messages]);
 
   if (!data) return;
-
   const status = data.game.status;
 
   return (
