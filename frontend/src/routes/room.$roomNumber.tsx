@@ -3,7 +3,7 @@ import { useUser } from "../contexts/UserContext";
 import { useWebSocket } from "../hooks/useWebsocket";
 import { useEffect, useState } from "react";
 import HeaderInfo from "../components/molecules/headerInfo/HeaderInfo";
-import OwnerControls from "../components/room/OwnerControls";
+import OwnerControls from "../components/molecules/ownerControls/OwnerControls";
 import WaitingScreen from "../components/templates/waitingScreen/WaitingScreen";
 import PlayingScreen from "../components/templates/playingScreen/PlayingScreen";
 import FinishedStyles from "../components/templates/finishedScreen/FinishedScreen";

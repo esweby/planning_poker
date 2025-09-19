@@ -15,6 +15,7 @@ export interface ContainerProps {
   margin?: string;
   padding?: string;
   className?: string;
+  gap?: string;
 }
 
 const Container = (props: ContainerProps) => {
@@ -26,6 +27,7 @@ const Container = (props: ContainerProps) => {
     alignItems,
     margin = "",
     padding = "",
+    gap = "",
     className,
   } = props;
 
@@ -45,6 +47,7 @@ const Container = (props: ContainerProps) => {
       style={{
         margin: `${margin.length > 0 ? margin : "0px"}`,
         padding: `${padding.length > 0 ? padding : "0px"}`,
+        gap: `${gap.length > 0 ? gap : ""}`,
       }}
     >
       {children}

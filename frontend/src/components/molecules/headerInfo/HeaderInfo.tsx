@@ -1,3 +1,4 @@
+import Button from "../../atoms/button/Button";
 import Container from "../../atoms/containers/Container";
 import Title from "../../atoms/title/Title";
 
@@ -18,9 +19,7 @@ const HeaderInfo = ({ owner, roomId }: { owner: string; roomId: string }) => {
       <Title level={2} weight="bold" size="lg">
         {owner}'s room
       </Title>
-      <button className="button--copy-invite" onClick={handleCopyInvite}>
-        Copy Invite Link
-      </button>
+      <Button onClick={handleCopyInvite}>Copy Invite Link</Button>
     </Container>
   );
 };
