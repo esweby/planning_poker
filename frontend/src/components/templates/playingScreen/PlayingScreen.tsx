@@ -1,9 +1,10 @@
 import { useUser } from "../../../contexts/UserContext";
-import avatar from "animal-avatar-generator";
-import styles from "./PlayingScreen.module.css";
 import Title from "../../atoms/title/Title";
 import Container from "../../atoms/containers/Container";
 import UserList from "../../organisms/userLists/UserList";
+import Button from "../../atoms/button/Button";
+
+import cl from "./PlayingScreen.module.css";
 
 const voteValues = ["0", "1", "2", "3", "6", "8", "10", "12", "?"];
 
@@ -14,7 +15,7 @@ const PlayingScreen = ({
   data: Message;
   sendMessage: (arg: any) => void;
 }) => {
-  const { name, seed } = useUser();
+  const { name } = useUser();
 
   const currUser = data.users[name];
   const votes = data.game.voted;
@@ -23,122 +24,85 @@ const PlayingScreen = ({
   const makeVote = (vote: string) =>
     sendMessage({ type: "vote", payload: { vote: vote } });
 
+  const countNumVotes = (name: string) => {
+    return Object.keys(data.users).reduce((prev, curr) => {
+      const currRole = data.users[curr].role;
+      if (currRole === name && votes[curr]) {
+        return prev + 1;
+      }
+
+      return prev;
+    }, 0);
+  };
+
+  const countNumRole = (name: string): number => {
+    return Object.keys(data.users).reduce((prev, curr) => {
+      const currRole = data.users[curr].role;
+      if (currRole === name) {
+        return prev + 1;
+      }
+
+      return prev;
+    }, 0);
+  };
+
   return (
     <Container
       display="block"
       type="main"
-      className={styles.container}
+      className={cl.container}
       padding="1.5rem 0"
     >
       <Container display="block" type="section">
         <Title level={2} size="lg" weight="bold">
           Hey {currUser.username} make your vote!
         </Title>
-        <div className={styles.votesContainer}>
+        <Container type="div" display="flex" gap="0.5rem" padding="0 0 1rem">
           {voteValues.map((v) => {
-            let classes = `${styles.voteBtn}`;
+            let classes = `${cl.voteBtn}`;
             if (myVote === v) {
-              classes += ` ${styles.chosen}`;
+              classes += ` ${cl.chosen}`;
             }
 
             return (
-              <button key={v} onClick={() => makeVote(v)} className={classes}>
+              <Button
+                key={v}
+                onClick={() => makeVote(v)}
+                className={classes}
+                small
+              >
                 {v}
-              </button>
+              </Button>
             );
           })}
-        </div>
+        </Container>
       </Container>
       <Title level={2} size="lg" weight="bold">
         Voted
       </Title>
-      <section className={styles.votedContainer}>
+      <Container display="grid" type="section" className={cl.votedContainer}>
         <UserList data={data} showVoted={true} />
-        <div>
-          <ul className={styles.votedStats}>
-            <li>
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Delivery Lead" && votes[curr]) {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              of{" "}
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Delivery Lead") {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              DLs have voted.
-            </li>
-            <li>
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Product Owner" && votes[curr]) {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              of{" "}
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Product Owner") {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              POs have voted.
-            </li>
-            <li>
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Developer" && votes[curr]) {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              of{" "}
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Developer") {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              Devs have voted.
-            </li>
-            <li>
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Tester" && votes[curr]) {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              of{" "}
-              {Object.keys(data.users).reduce((prev, curr) => {
-                const currRole = data.users[curr].role;
-                if (currRole === "Tester") {
-                  return prev + 1;
-                }
-
-                return prev;
-              }, 0)}{" "}
-              Testers have voted.
-            </li>
-          </ul>
-        </div>
-      </section>
+        <Container display="block" type="div">
+          <Container display="block" type="ul" className={cl.votedStats}>
+            <Container display="block" type="li">
+              {countNumVotes("Delivery Lead")} of{" "}
+              {countNumRole("Delivery Lead")} DLs have voted.
+            </Container>
+            <Container display="block" type="li">
+              {countNumVotes("Product Owner")} of{" "}
+              {countNumRole("Product Owner")} POs have voted.
+            </Container>
+          </Container>
+          <Container display="block" type="li">
+            {countNumVotes("Developer")} of {countNumRole("Developer")} Devs
+            have voted.
+          </Container>
+          <Container display="block" type="li">
+            {countNumVotes("Tester")} of {countNumRole("Tester")} Testers have
+            voted.
+          </Container>
+        </Container>
+      </Container>
     </Container>
   );
 };

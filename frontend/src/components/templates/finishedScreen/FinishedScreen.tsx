@@ -29,12 +29,7 @@ const FinishedStyles = ({ data }: { data: Message }) => {
       <Title level={2} size="lg" weight="bold" className={cl.title}>
         And the result is ... {isItATie ? "It's a tie!" : highestValues[0]}
       </Title>
-      <Container
-        display="flex"
-        type="div"
-        justifyContent="between"
-        padding="0 2rem"
-      >
+      <Container display="flex" type="div" justifyContent="between">
         <Container display="block" type="section">
           <Title level={3} size="md" weight="bold">
             Votes
@@ -43,7 +38,12 @@ const FinishedStyles = ({ data }: { data: Message }) => {
         </Container>
         <Container display="block" type="section">
           <Title level={3} size="md" weight="bold">
-            Voted &nbsp;&nbsp;Votes
+            <Text type="span" weight="bold" size="xl" className={cl.voted}>
+              Voted
+            </Text>
+            <Text type="span" weight="normal" size="xl" className={cl.votes}>
+              Votes
+            </Text>
           </Title>
           <Container display="block" type="ul" className={cl.voteList}>
             {Object.keys(results)
@@ -56,10 +56,20 @@ const FinishedStyles = ({ data }: { data: Message }) => {
                   justifyContent="between"
                   padding="0 1.25rem"
                 >
-                  <Text type="span" weight="bold" size="xl">
+                  <Text
+                    type="span"
+                    weight="bold"
+                    size="xl"
+                    className={cl.voted}
+                  >
                     {result}
                   </Text>
-                  <Text type="span" weight="normal" size="xl">
+                  <Text
+                    type="span"
+                    weight="normal"
+                    size="xl"
+                    className={cl.votes}
+                  >
                     {results[result].toString()}
                   </Text>
                 </Container>

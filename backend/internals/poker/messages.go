@@ -9,7 +9,7 @@ const (
 	MessageTypeVote        MessageType = "vote"
 	MessageTypeStartVoting MessageType = "start_voting"
 	MessageTypeRevealVotes MessageType = "reveal_votes"
-	MessageTypeResetVoting MessageType = "reset_voting"
+	MessageTypeRestartVoting MessageType = "restart_voting"
 )
 
 type WSMessage struct {

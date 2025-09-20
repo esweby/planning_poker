@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useUser } from "../contexts/UserContext";
 import { useWebSocket } from "../hooks/useWebsocket";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import HeaderInfo from "../components/molecules/headerInfo/HeaderInfo";
 import OwnerControls from "../components/molecules/ownerControls/OwnerControls";
 import WaitingScreen from "../components/templates/waitingScreen/WaitingScreen";
 import PlayingScreen from "../components/templates/playingScreen/PlayingScreen";
 import FinishedStyles from "../components/templates/finishedScreen/FinishedScreen";
+import Container from "../components/atoms/containers/Container";
 
 export const Route = createFileRoute("/room/$roomNumber")({
   component: Room,
@@ -20,6 +21,8 @@ function Room() {
   const { roomNumber } = Route.useParams();
   const { name, role, seed } = useUser();
 
+  const hasConnected = useRef(false);
+
   const { isConnected, messages, connect, closeConnection, sendMessage } =
     useWebSocket();
 
@@ -29,12 +32,14 @@ function Room() {
       return;
     }
 
-    connect(
-      `ws://localhost:8080/api/join/${roomNumber}?username=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}&seed=${encodeURIComponent(seed)}`
-    );
+    if (hasConnected.current) return;
+
+    hasConnected.current = true;
+    connect(roomNumber, name, role, seed);
 
     return () => {
       closeConnection();
+      hasConnected.current = false;
     };
   }, [roomNumber, name, role]);
 
@@ -53,8 +58,8 @@ function Room() {
   const status = data.game.status;
 
   return (
-    <div>
-      <header>
+    <>
+      <Container display="block" type="header">
         <HeaderInfo owner={data.owner} roomId={roomNumber} />
         {name === data.owner && (
           <OwnerControls
@@ -62,12 +67,12 @@ function Room() {
             sendMessage={sendMessage}
           />
         )}
-      </header>
+      </Container>
       {status === "waiting" && <WaitingScreen data={data} />}
       {status === "playing" && (
         <PlayingScreen data={data} sendMessage={sendMessage} />
       )}
       {status === "finished" && <FinishedStyles data={data} />}
-    </div>
+    </>
   );
 }

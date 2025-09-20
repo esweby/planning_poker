@@ -150,22 +150,13 @@ func (r *Room) RemoveUser(username Username) RoomStatus {
 	return RoomInUse
 }
 
-func (r *Room) ResetVoting() {
+func (r *Room) StartVoting() {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
 	r.Game.Voted = make(Voted)
 	r.Game.Votes = make(Votes)
 	r.Game.Revealed = false
-	r.Game.Status = StatusWaiting
-
-	go r.scheduleBroadcast()
-}
-
-func (r *Room) StartVoting() {
-	r.Mutex.Lock()
-	defer r.Mutex.Unlock()
-
 	r.Game.Status = StatusPlaying
 	go r.scheduleBroadcast()
 }
@@ -198,4 +189,8 @@ func (r *Room) RevealVotes(revealer Username) error {
 
 	go r.scheduleBroadcast()
 	return nil
+}
+
+func (r *Room) RestartVoting() {
+	r.StartVoting()
 }

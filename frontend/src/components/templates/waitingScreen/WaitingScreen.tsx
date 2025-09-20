@@ -1,12 +1,15 @@
+import Container from "../../atoms/containers/Container";
+import Title from "../../atoms/title/Title";
 import UserList from "../../organisms/userLists/UserList";
-import styles from "./WaitingScreen.module.css";
 
 const WaitingScreen = ({ data }: { data: Message }) => {
   return (
-    <main className={styles.container}>
-      <h3 className={styles.title}>Waiting to start...</h3>
+    <Container type="main" display="block">
+      <Title level={3} weight="bold" size="md">
+        Waiting to start...
+      </Title>
       <UserList data={data} />
-    </main>
+    </Container>
   );
 };
 

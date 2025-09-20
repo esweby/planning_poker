@@ -2,6 +2,7 @@ package api
 
 import (
 	"backend/internals/poker"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,8 +27,8 @@ func handleJoinRoom(ctx *gin.Context) {
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to upgrade connection"})
-		return
+		log.Printf("failed websocket upgrade: %v", err)
+    	return
 	}
 
 	user := poker.User{

@@ -1,4 +1,5 @@
 import { forwardRef, type ForwardedRef } from "react";
+import type { ReactNode } from "react";
 import cl from "./Title.module.css";
 
 type Level = 1 | 2 | 3 | 4;
@@ -7,7 +8,7 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 export interface TitleProps {
   level: Level;
-  children: string[] | string;
+  children: string[] | string | ReactNode | ReactNode[];
   weight: Weight;
   size: Size;
   marginOff?: boolean;

@@ -116,12 +116,12 @@ func (r *Room) handleMessage(cu *ConnectedUser, message []byte) error {
 		}
 		return r.RevealVotes(cu.User.Username)
 
-	case MessageTypeResetVoting:
+	case MessageTypeRestartVoting:
 		// Only room owner can reset voting
 		if cu.User.Username != r.Owner {
 			return errors.New("only room owner can reset voting")
 		}
-		r.ResetVoting()
+		r.RestartVoting()
 		return nil
 
 	default:

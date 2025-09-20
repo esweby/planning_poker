@@ -83,7 +83,6 @@ func (rm *RoomManager) AddUserToRoom(roomID RoomID, user User, conn *websocket.C
 	}
 
 	log.Printf("- Room (%s): %s joined", roomID, user.Username)
-	room.scheduleBroadcast()
 	return nil
 }
 

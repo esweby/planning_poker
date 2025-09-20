@@ -5,8 +5,15 @@ export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
 
-  const connect = (url: string) => {
-    const socket = new WebSocket(url);
+  const connect = (
+    roomNumber: string,
+    name: string,
+    role: string,
+    seed: string
+  ) => {
+    const socket = new WebSocket(
+      `ws://localhost:8080/api/join/${roomNumber}?username=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}&seed=${encodeURIComponent(seed)}`
+    );
     socketRef.current = socket;
 
     socket.onopen = () => setIsConnected(true);
