@@ -41,15 +41,13 @@ const Container = (props: ContainerProps) => {
 
   if (className) classes += ` ${className}`;
 
+  const styles: { [K: string]: string } = {};
+  if (margin) styles.margin = margin;
+  if (padding) styles.padding = padding;
+  if (gap) styles.gap = gap;
+
   return (
-    <Tag
-      className={classes}
-      style={{
-        margin: `${margin.length > 0 ? margin : "0px"}`,
-        padding: `${padding.length > 0 ? padding : "0px"}`,
-        gap: `${gap.length > 0 ? gap : ""}`,
-      }}
-    >
+    <Tag className={classes} style={styles}>
       {children}
     </Tag>
   );

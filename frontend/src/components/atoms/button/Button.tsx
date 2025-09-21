@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import cl from "./Button.module.css";
 
 interface ButtonProps {
   onClick: () => void;
-  children: string | string[];
+  children: string | string[] | ReactNode;
   border?: boolean;
   small?: boolean;
   medium?: boolean;

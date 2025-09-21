@@ -1,0 +1,31 @@
+.btn {
+  background-color: transparent;
+  font-size: 1.1rem;
+  width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid black;
+  border-radius: 0.25rem;
+  margin: 1.75rem 0 0;
+  transition: all ease 250ms;
+  cursor: pointer;
+}
+
+.img {
+  width: 20px;
+  height: 20px;
+  transform: rotate(45deg);
+  transition: all ease 350ms;
+}
+
+.btn:hover {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+  background-color: rgb(255, 255, 255);
+}
+
+.btn:hover .img {
+  transform: rotate(450deg);
+}

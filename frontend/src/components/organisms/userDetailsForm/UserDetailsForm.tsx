@@ -3,6 +3,12 @@ import JoinRoomBtn from "../../JoinRoomBtn";
 import Icon from "../../atoms/icon/Icon";
 import Container from "../../atoms/containers/Container";
 
+import cl from "./UserDetailsForm.module.css";
+import LabelWithChild from "../../atoms/label/LabelWithChild";
+import Input from "../../atoms/input/Input";
+import Select from "../../atoms/select/Select";
+import JoinButton from "../../molecules/joinButton/JoinButton";
+
 interface UserDetailsForm {
   ctaText: string;
   handleClick: () => void;
@@ -12,7 +18,7 @@ const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
   const { name, role, seed, setName, setRole, setSeed } = useUser();
 
   return (
-    <div className="container--user-details">
+    <Container display="block" type="div" className={cl.container}>
       <Container
         type="header"
         display="flex"
@@ -22,44 +28,39 @@ const UserDetailsForm = ({ ctaText, handleClick }: UserDetailsForm) => {
       >
         <Icon name={name} seed={seed} size="huge" />
       </Container>
-      <label className="label--user-details">
-        <span>Name</span>
-        <input
-          type="text"
-          placeholder="Bob"
-          className="input--name"
+      <LabelWithChild name="Name">
+        <Input
+          name="Name"
+          placeholder="Tobias"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={setName}
         />
-      </label>
-      <label className="label--user-details">
-        <span>Avatar Seed</span>
-        <input
-          type="text"
-          placeholder="Type till you like your avatar"
-          className="input--name"
+      </LabelWithChild>
+      <LabelWithChild name="Avatar Seed">
+        <Input
+          name="avatar"
+          placeholder="Random string?"
           value={seed}
-          onChange={(e) => setSeed(e.target.value)}
+          onChange={setSeed}
         />
-      </label>
-      <label className="label--user-details">
-        <span>Role</span>
-        <select
-          className="select--role"
+      </LabelWithChild>
+      <LabelWithChild name="Role">
+        <Select
           value={role}
-          onChange={(e) => setRole(e.target.value as any)}
-        >
-          <option>Choose your role</option>
-          <option value="Delivery Lead">Delivery Lead</option>
-          <option value="Product Owner">Product Owner</option>
-          <option value="Developer">Developer</option>
-          <option value="Tester">Tester</option>
-        </select>
-      </label>
-      <div>
-        <JoinRoomBtn onClick={handleClick}>{ctaText}</JoinRoomBtn>
-      </div>
-    </div>
+          onChange={setRole}
+          options={[
+            { display: "Choose your role" },
+            { value: "Delivery Lead", display: "Delivery Lead" },
+            { value: "Product Owner", display: "Product Owner" },
+            { value: "Developer", display: "Developer" },
+            { value: "Tester", display: "Tester" },
+          ]}
+        />
+      </LabelWithChild>
+      <Container display="block" type="div">
+        <JoinButton onClick={handleClick} />
+      </Container>
+    </Container>
   );
 };
 

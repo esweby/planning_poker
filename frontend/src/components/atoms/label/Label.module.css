@@ -1,0 +1,9 @@
+.labelWithChild {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.labelWithChild span {
+  font-weight: 600;
+  display: block;
+}

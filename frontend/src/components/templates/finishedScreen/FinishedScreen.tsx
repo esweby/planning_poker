@@ -37,11 +37,11 @@ const FinishedStyles = ({ data }: { data: Message }) => {
           <UserList data={data} showVote={true} />
         </Container>
         <Container display="block" type="section">
-          <Title level={3} size="md" weight="bold">
+          <Title level={3} size="md" weight="bold" className={cl.voteTitle}>
             <Text type="span" weight="bold" size="xl" className={cl.voted}>
               Voted
             </Text>
-            <Text type="span" weight="normal" size="xl" className={cl.votes}>
+            <Text type="span" weight="bold" size="xl" className={cl.votes}>
               Votes
             </Text>
           </Title>
