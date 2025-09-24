@@ -1,5 +1,4 @@
 import { useUser } from "../../../contexts/UserContext";
-import JoinRoomBtn from "../../JoinRoomBtn";
 import Icon from "../../atoms/icon/Icon";
 import Container from "../../atoms/containers/Container";
 
