@@ -80,7 +80,7 @@ func (r *Room) ToSerializable() SerializableRoom {
 			Username: connectedUser.User.Username,
 			Role:     connectedUser.User.Role,
 			Score:    connectedUser.User.Score,
-			Seed: 	  connectedUser.User.Seed,
+			Seed:     connectedUser.User.Seed,
 		}
 	}
 
@@ -90,13 +90,15 @@ func (r *Room) ToSerializable() SerializableRoom {
 	}
 
 	votes := make(Votes)
-	for k, v := range r.Game.Votes {
-		votes[k] = v
+	if r.Game.Revealed {
+		for k, v := range r.Game.Votes {
+			votes[k] = v
+		}
 	}
 
 	game := Game{
 		Title:    r.Game.Title,
-		Status:	  r.Game.Status,
+		Status:   r.Game.Status,
 		Voted:    voted,
 		Votes:    votes,
 		Revealed: r.Game.Revealed,

@@ -149,7 +149,6 @@ func (r *Room) scheduleBroadcast() {
 	})
 }
 
-
 func (r *Room) broadcastState() {
 	serializable := r.ToSerializable()
 	message, err := json.Marshal(map[string]interface{}{
@@ -181,6 +180,5 @@ func (r *Room) Close() {
 
 	for _, user := range r.Users {
 		user.Conn.Close()
-		close(user.Send)
 	}
 }
