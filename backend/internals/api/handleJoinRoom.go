@@ -12,7 +12,7 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	
+
 	// IMPORTANT: in production you should check origin properly
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -28,14 +28,18 @@ func handleJoinRoom(ctx *gin.Context) {
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		log.Printf("failed websocket upgrade: %v", err)
-    	return
+		return
 	}
 
 	user := poker.User{
 		Username: poker.Username(username),
-		Role: poker.Role(role),
-		Seed: seed,
+		Role:     poker.Role(role),
+		Seed:     seed,
 	}
 
-	roomManager.AddUserToRoom(roomId, user, conn)
+	if err := roomManager.AddUserToRoom(roomId, user, conn); err != nil {
+		log.Printf("failed to join room: %v", err)
+		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.ClosePolicyViolation, err.Error()))
+		conn.Close()
+	}
 }
