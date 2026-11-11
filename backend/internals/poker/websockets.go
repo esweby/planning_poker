@@ -10,9 +10,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// readPump reads messages from one connection until it fails. It is the only
+// goroutine that closes cu.Send, which in turn stops writePump.
 func (r *Room) readPump(cu *ConnectedUser) {
 	defer func() {
-		r.RemoveUser(cu.User.Username)
+		r.removeConn(cu)
 		cu.Conn.Close()
 		close(cu.Send)
 	}()
@@ -24,33 +26,33 @@ func (r *Room) readPump(cu *ConnectedUser) {
 		return nil
 	})
 
+	// ReadMessage blocks, so there is no point checking for shutdown here:
+	// Room.Close closes the connection, which makes ReadMessage return.
 	for {
-		select {
-		case <-r.ctx.Done():
-			return // Room is closing
-		default:
-			_, message, err := cu.Conn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					log.Printf("WebSocket error: %v", err)
-				}
-				return
+		_, message, err := cu.Conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("WebSocket error: %v", err)
 			}
+			return
+		}
 
-			if err := r.handleMessage(cu, message); err != nil {
-				log.Printf("Error handling message: %v", err)
-				errorMsg := map[string]string{"error": err.Error()}
-				cu.Mutex.Lock()
-				jsonErr := cu.Conn.WriteJSON(errorMsg)
-				cu.Mutex.Unlock()
-				if jsonErr != nil {
-					log.Printf("Error sending error message: %v", jsonErr)
-				}
+		if err := r.handleMessage(cu, message); err != nil {
+			log.Printf("Error handling message: %v", err)
+			// Queue the reply rather than writing it here, so writePump stays
+			// the connection's only writer.
+			reply, _ := json.Marshal(map[string]string{"error": err.Error()})
+			select {
+			case cu.Send <- reply:
+			default:
+				log.Printf("Send buffer full for user: %s, dropping error reply", cu.User.Username)
 			}
 		}
 	}
 }
 
+// writePump is the only goroutine that writes to the connection, so writes
+// and write deadlines never race.
 func (r *Room) writePump(cu *ConnectedUser) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -67,21 +69,12 @@ func (r *Room) writePump(cu *ConnectedUser) {
 				return
 			}
 
-			// Use a mutex to prevent concurrent writes to the connection
-			cu.Mutex.Lock()
-			err := cu.Conn.WriteMessage(websocket.TextMessage, message)
-			cu.Mutex.Unlock()
-
-			if err != nil {
+			if err := cu.Conn.WriteMessage(websocket.TextMessage, message); err != nil {
 				return
 			}
 		case <-ticker.C:
-			cu.Mutex.Lock()
 			cu.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-			err := cu.Conn.WriteMessage(websocket.PingMessage, nil)
-			cu.Mutex.Unlock()
-
-			if err != nil {
+			if err := cu.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
 		}
@@ -129,55 +122,61 @@ func (r *Room) handleMessage(cu *ConnectedUser, message []byte) error {
 	}
 }
 
+// scheduleBroadcast sends the room state to everyone shortly, coalescing
+// bursts of changes into one broadcast. It is safe to call while holding
+// r.Mutex: the timer callback releases broadcastMutex before it takes r.Mutex,
+// so the two locks are never held in opposite orders.
 func (r *Room) scheduleBroadcast() {
 	r.broadcastMutex.Lock()
 	defer r.broadcastMutex.Unlock()
 
-	if r.broadcastTimer != nil {
-		r.broadcastTimer.Stop()
+	if r.broadcastPending {
+		return
 	}
-
 	r.broadcastPending = true
-	r.broadcastTimer = time.AfterFunc(100*time.Millisecond, func() {
-		r.broadcastMutex.Lock()
-		defer r.broadcastMutex.Unlock()
 
-		if r.broadcastPending {
-			r.broadcastPending = false
-			r.broadcastState()
-		}
+	time.AfterFunc(broadcastDelay, func() {
+		r.broadcastMutex.Lock()
+		r.broadcastPending = false
+		r.broadcastMutex.Unlock()
+
+		r.broadcastState()
 	})
 }
 
 func (r *Room) broadcastState() {
-	serializable := r.ToSerializable()
-	message, err := json.Marshal(map[string]interface{}{
-		"payload": serializable,
-	})
-
-	if err != nil {
-		log.Printf("Error marshaling state: %v", err)
-		return
-	}
-
 	r.Mutex.RLock()
 	defer r.Mutex.RUnlock()
 
-	for _, user := range r.Users {
+	if r.closed {
+		return
+	}
+
+	// Each user gets their own payload so they can see their own vote
+	// before reveal without exposing anyone else's.
+	for username, user := range r.Users {
+		message, err := json.Marshal(map[string]interface{}{
+			"payload": r.serializeForLocked(username),
+		})
+		if err != nil {
+			log.Printf("Error marshaling state for %s: %v", username, err)
+			continue
+		}
+
 		select {
 		case user.Send <- message:
 		default:
-			log.Printf("Send buffer full for user: %s, may be disconnected", user.User.Username)
+			log.Printf("Send buffer full for user: %s, may be disconnected", username)
 		}
 	}
 }
 
+// Close disconnects everyone and stops the room accepting joins.
 func (r *Room) Close() {
-	r.cancelFunc()
-
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
+	r.closed = true
 	for _, user := range r.Users {
 		user.Conn.Close()
 	}

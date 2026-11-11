@@ -46,7 +46,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, role, seed }));
-  }, [name, role]);
+  }, [name, role, seed]);
 
   const setName = (n: string) => setNameState(n);
   const setRole = (r: Role) => setRoleState(r);

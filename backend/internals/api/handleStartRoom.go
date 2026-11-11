@@ -18,11 +18,16 @@ func handleStartRoom(ctx *gin.Context) {
 		return
 	}
 
-	roomID := roomManager.CreateNewRoom(req.Owner)
+	roomID, token, err := roomManager.CreateNewRoom(req.Owner)
+	if err != nil {
+		ctx.JSON(joinErrorStatus(err), gin.H{"error": err.Error()})
+		return
+	}
 
 	log.Println("Room started by ", req.Owner.Username)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"roomNumber": roomID,
+		"token":      token,
 	})
 }

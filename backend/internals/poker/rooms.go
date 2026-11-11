@@ -31,7 +31,21 @@ func GetRoomManager() *RoomManager {
 	return roomManager
 }
 
-func (rm *RoomManager) CreateNewRoom(owner User) RoomID {
+// ErrRoomNotFound is returned when no room has the given ID.
+var ErrRoomNotFound = errors.New("room not found")
+
+const (
+	cleanupInterval = time.Minute
+	emptyRoomTTL    = 5 * time.Minute
+)
+
+// CreateNewRoom creates a room owned by owner and returns its ID and the
+// owner's session token, which the owner must present when joining.
+func (rm *RoomManager) CreateNewRoom(owner User) (RoomID, string, error) {
+	if err := ValidateUsername(owner.Username); err != nil {
+		return "", "", err
+	}
+
 	rm.mutex.Lock()
 	defer rm.mutex.Unlock()
 
@@ -46,9 +60,12 @@ func (rm *RoomManager) CreateNewRoom(owner User) RoomID {
 
 	log.Printf("- Room (%s): %s created room", roomID, owner.Username)
 	room := generateRoom(owner, roomID)
+	token := room.claimLocked(owner.Username)
+	// An unjoined room counts as empty, so it is cleaned up if nobody comes.
+	room.EmptySince = time.Now()
 	rm.rooms[roomID] = room
 
-	return roomID
+	return roomID, token, nil
 }
 
 func (rm *RoomManager) GetRoom(roomID RoomID) (*Room, error) {
@@ -58,7 +75,7 @@ func (rm *RoomManager) GetRoom(roomID RoomID) (*Room, error) {
 	room, exists := rm.rooms[roomID]
 	log.Printf("-- GetRoom %s - exists %t", roomID, exists)
 	if !exists {
-		return nil, errors.New("room not found")
+		return nil, ErrRoomNotFound
 	}
 
 	return room, nil
@@ -71,30 +88,20 @@ func (rm *RoomManager) RemoveRoom(roomID RoomID) {
 	delete(rm.rooms, roomID)
 }
 
-func (rm *RoomManager) AddUserToRoom(roomID RoomID, user User, conn *websocket.Conn) error {
+// JoinRoom connects user to a room and returns their session token.
+func (rm *RoomManager) JoinRoom(roomID RoomID, user User, token string, conn *websocket.Conn) (string, error) {
 	room, err := rm.GetRoom(roomID)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	err = room.AddUser(user, conn)
+	token, err = room.Join(user, token, conn)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	log.Printf("- Room (%s): %s joined", roomID, user.Username)
-	return nil
-}
-
-func (rm *RoomManager) RemoveUserFromRoom(roomID RoomID, username Username) (RoomStatus, error) {
-	room, err := rm.GetRoom(roomID)
-	if err != nil {
-		return RoomEmpty, err
-	}
-
-	log.Printf("- Room (%s): %s removed", roomID, username)
-	status := room.RemoveUser(username)
-	return status, nil
+	return token, nil
 }
 
 func (rm *RoomManager) GetSerializableRoom(roomID RoomID) (SerializableRoom, error) {
@@ -107,7 +114,7 @@ func (rm *RoomManager) GetSerializableRoom(roomID RoomID) (SerializableRoom, err
 }
 
 func (rm *RoomManager) cleanupRoutine() {
-	ticker := time.NewTicker(60 * time.Minute)
+	ticker := time.NewTicker(cleanupInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -118,13 +125,9 @@ func (rm *RoomManager) cleanupRoutine() {
 		for roomID, room := range rm.rooms {
 			room.Mutex.RLock()
 			if len(room.Users) == 0 {
-				if room.EmptySince.IsZero() {
-					room.EmptySince = now
-				} else if now.Sub(room.EmptySince) > 5*time.Minute {
+				if !room.EmptySince.IsZero() && now.Sub(room.EmptySince) > emptyRoomTTL {
 					roomsToRemove = append(roomsToRemove, roomID)
 				}
-			} else {
-				room.EmptySince = time.Time{}
 			}
 			room.Mutex.RUnlock()
 		}

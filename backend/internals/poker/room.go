@@ -1,11 +1,16 @@
 package poker
 
 import (
-	"context"
+	"crypto/rand"
+	"crypto/subtle"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gorilla/websocket"
 )
@@ -15,12 +20,20 @@ type RoomID = string
 type RoomStatus = string
 
 const (
-	RoomInUse      = "roomInUse"
-	RoomEmpty      = "roomEmpty"
-	writeWait      = 10 * time.Second
-	pongWait       = 60 * time.Second
-	pingPeriod     = (pongWait * 9) / 10
-	maxMessageSize = 512
+	RoomInUse         = "roomInUse"
+	RoomEmpty         = "roomEmpty"
+	writeWait         = 10 * time.Second
+	pongWait          = 60 * time.Second
+	pingPeriod        = (pongWait * 9) / 10
+	maxMessageSize    = 512
+	maxUsernameLength = 32
+	broadcastDelay    = 100 * time.Millisecond
+)
+
+var (
+	ErrInvalidUsername = errors.New("username must be 1-32 characters")
+	ErrNameTaken       = errors.New("that name is already taken in this room")
+	ErrRoomClosed      = errors.New("room is closed")
 )
 
 type Room struct {
@@ -31,13 +44,14 @@ type Room struct {
 	Mutex      sync.RWMutex
 	EmptySince time.Time
 
-	// lifecycle methods
-	cancelFunc context.CancelFunc
-	ctx        context.Context
+	// sessions maps each name claimed in this room to the secret token that
+	// proves ownership of it. Claims last for the room's lifetime, so nobody
+	// can take over a name (including the owner's) after its holder drops.
+	sessions map[Username]string
+	closed   bool
 
-	// Debouncing messages
+	// Throttling broadcasts: at most one is pending at a time.
 	broadcastPending bool
-	broadcastTimer   *time.Timer
 	broadcastMutex   sync.Mutex
 }
 
@@ -51,12 +65,11 @@ type SerializableRoom struct {
 }
 
 func generateRoom(owner User, roomID RoomID) *Room {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	return &Room{
-		ID:    roomID,
-		Owner: owner.Username,
-		Users: make(ConnectedUsers),
+		ID:       roomID,
+		Owner:    owner.Username,
+		Users:    make(ConnectedUsers),
+		sessions: make(map[Username]string),
 		Game: Game{
 			Title:    "",
 			Status:   StatusWaiting,
@@ -64,15 +77,80 @@ func generateRoom(owner User, roomID RoomID) *Room {
 			Votes:    make(Votes),
 			Revealed: false,
 		},
-		ctx:        ctx,
-		cancelFunc: cancel,
 	}
 }
 
+// ValidateUsername reports whether name is acceptable as a display name.
+func ValidateUsername(name Username) error {
+	trimmed := strings.TrimSpace(string(name))
+	if trimmed == "" || trimmed != string(name) || utf8.RuneCountInString(trimmed) > maxUsernameLength {
+		return ErrInvalidUsername
+	}
+	return nil
+}
+
+func newToken() string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		panic(fmt.Sprintf("crypto/rand failed: %v", err))
+	}
+	return hex.EncodeToString(b)
+}
+
+// claimLocked reserves name and returns its new token. Caller holds r.Mutex.
+func (r *Room) claimLocked(name Username) string {
+	token := newToken()
+	r.sessions[name] = token
+	return token
+}
+
+// checkJoinLocked validates a join attempt. Caller holds r.Mutex.
+func (r *Room) checkJoinLocked(name Username, token string) error {
+	if r.closed {
+		return ErrRoomClosed
+	}
+	if err := ValidateUsername(name); err != nil {
+		return err
+	}
+	if claimed, ok := r.sessions[name]; ok {
+		if subtle.ConstantTimeCompare([]byte(claimed), []byte(token)) != 1 {
+			return ErrNameTaken
+		}
+	}
+	return nil
+}
+
+// CheckJoin reports whether a join with this name and token would succeed,
+// without changing anything. Used to reject bad joins before the websocket
+// upgrade so the client gets a readable HTTP error.
+func (r *Room) CheckJoin(name Username, token string) error {
+	r.Mutex.RLock()
+	defer r.Mutex.RUnlock()
+
+	return r.checkJoinLocked(name, token)
+}
+
+// ToSerializable returns a snapshot safe to show to anyone: vote values are
+// hidden until they are revealed.
 func (r *Room) ToSerializable() SerializableRoom {
 	r.Mutex.RLock()
 	defer r.Mutex.RUnlock()
 
+	return r.serializeForLocked("")
+}
+
+// ToSerializableFor returns a snapshot for one viewer: before reveal it
+// includes only that viewer's own vote.
+func (r *Room) ToSerializableFor(viewer Username) SerializableRoom {
+	r.Mutex.RLock()
+	defer r.Mutex.RUnlock()
+
+	return r.serializeForLocked(viewer)
+}
+
+// serializeForLocked builds a snapshot for viewer (empty means no viewer).
+// The caller must hold r.Mutex.
+func (r *Room) serializeForLocked(viewer Username) SerializableRoom {
 	users := make(Users)
 
 	for username, connectedUser := range r.Users {
@@ -94,6 +172,8 @@ func (r *Room) ToSerializable() SerializableRoom {
 		for k, v := range r.Game.Votes {
 			votes[k] = v
 		}
+	} else if vote, ok := r.Game.Votes[viewer]; ok && viewer != "" {
+		votes[viewer] = vote
 	}
 
 	game := Game{
@@ -112,12 +192,24 @@ func (r *Room) ToSerializable() SerializableRoom {
 	}
 }
 
-func (r *Room) AddUser(user User, conn *websocket.Conn) error {
+// Join connects user to the room. A new name is claimed and given a fresh
+// token; a claimed name needs its token, and then replaces any existing
+// (possibly stale) connection for that name. It returns the session token.
+func (r *Room) Join(user User, token string, conn *websocket.Conn) (string, error) {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
-	if _, exists := r.Users[user.Username]; exists {
-		return errors.New("user already in room")
+	if err := r.checkJoinLocked(user.Username, token); err != nil {
+		return "", err
+	}
+
+	if _, claimed := r.sessions[user.Username]; !claimed {
+		token = r.claimLocked(user.Username)
+	}
+
+	if old, ok := r.Users[user.Username]; ok {
+		// Its readPump will exit and see it has been replaced.
+		old.Conn.Close()
 	}
 
 	cu := &ConnectedUser{
@@ -126,18 +218,30 @@ func (r *Room) AddUser(user User, conn *websocket.Conn) error {
 		Send: make(chan []byte, 256),
 	}
 
+	session, _ := json.Marshal(map[string]string{"type": "session", "token": token})
+	cu.Send <- session
+
 	r.Users[user.Username] = cu
+	r.EmptySince = time.Time{}
 
 	go r.readPump(cu)
 	go r.writePump(cu)
 
-	go r.scheduleBroadcast()
-	return nil
+	r.scheduleBroadcast()
+	return token, nil
 }
 
-func (r *Room) RemoveUser(username Username) RoomStatus {
+// removeConn removes cu if it is still the live connection for its name. A
+// connection that has been replaced by a reconnect is ignored, so it cannot
+// remove its replacement.
+func (r *Room) removeConn(cu *ConnectedUser) RoomStatus {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
+
+	username := cu.User.Username
+	if r.Users[username] != cu {
+		return RoomInUse
+	}
 
 	delete(r.Users, username)
 	delete(r.Game.Voted, username)
@@ -148,7 +252,7 @@ func (r *Room) RemoveUser(username Username) RoomStatus {
 		return RoomEmpty
 	}
 
-	go r.scheduleBroadcast()
+	r.scheduleBroadcast()
 	return RoomInUse
 }
 
@@ -160,7 +264,7 @@ func (r *Room) StartVoting() {
 	r.Game.Votes = make(Votes)
 	r.Game.Revealed = false
 	r.Game.Status = StatusPlaying
-	go r.scheduleBroadcast()
+	r.scheduleBroadcast()
 }
 
 func (r *Room) SubmitVote(username Username, vote VoteValue) error {
@@ -174,7 +278,7 @@ func (r *Room) SubmitVote(username Username, vote VoteValue) error {
 	r.Game.Voted[username] = true
 	r.Game.Votes[username] = vote
 
-	go r.scheduleBroadcast()
+	r.scheduleBroadcast()
 	return nil
 }
 
@@ -189,7 +293,7 @@ func (r *Room) RevealVotes(revealer Username) error {
 	r.Game.Revealed = true
 	r.Game.Status = StatusFinished
 
-	go r.scheduleBroadcast()
+	r.scheduleBroadcast()
 	return nil
 }
 

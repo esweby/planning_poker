@@ -3,27 +3,34 @@ package api
 import (
 	"backend/internals/poker"
 	"log"
-	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+const closeWriteWait = time.Second
 
-	// IMPORTANT: in production you should check origin properly
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+func handleJoinRoom(ctx *gin.Context, upgrader *websocket.Upgrader) {
+	roomID := ctx.Param("roomId")
+	token := ctx.Query("token")
 
-func handleJoinRoom(ctx *gin.Context) {
-	roomId := ctx.Param("roomId")
-	username := ctx.Query("username")
-	role := ctx.Query("role")
-	seed := ctx.Query("seed")
+	user := poker.User{
+		Username: poker.Username(ctx.Query("username")),
+		Role:     poker.Role(ctx.Query("role")),
+		Seed:     ctx.Query("seed"),
+	}
+
+	// Reject what we can before upgrading, so the client gets a plain HTTP
+	// error instead of a websocket that opens and immediately closes.
+	room, err := roomManager.GetRoom(roomID)
+	if err == nil {
+		err = room.CheckJoin(user.Username, token)
+	}
+	if err != nil {
+		ctx.JSON(joinErrorStatus(err), gin.H{"error": err.Error()})
+		return
+	}
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
@@ -31,15 +38,12 @@ func handleJoinRoom(ctx *gin.Context) {
 		return
 	}
 
-	user := poker.User{
-		Username: poker.Username(username),
-		Role:     poker.Role(role),
-		Seed:     seed,
-	}
-
-	if err := roomManager.AddUserToRoom(roomId, user, conn); err != nil {
+	// The checks above can race with another join or the room closing, so
+	// JoinRoom validates again.
+	if _, err := roomManager.JoinRoom(roomID, user, token, conn); err != nil {
 		log.Printf("failed to join room: %v", err)
-		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.ClosePolicyViolation, err.Error()))
+		closeMsg := websocket.FormatCloseMessage(websocket.ClosePolicyViolation, err.Error())
+		conn.WriteControl(websocket.CloseMessage, closeMsg, time.Now().Add(closeWriteWait))
 		conn.Close()
 	}
 }

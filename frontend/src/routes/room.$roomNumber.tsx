@@ -8,6 +8,7 @@ import WaitingScreen from "../components/templates/waitingScreen/WaitingScreen";
 import PlayingScreen from "../components/templates/playingScreen/PlayingScreen";
 import FinishedStyles from "../components/templates/finishedScreen/FinishedScreen";
 import Container from "../components/atoms/containers/Container";
+import Text from "../components/atoms/text/Text";
 
 export const Route = createFileRoute("/room/$roomNumber")({
   component: Room,
@@ -23,7 +24,7 @@ function Room() {
 
   const hasConnected = useRef(false);
 
-  const { isConnected, messages, connect, closeConnection, sendMessage } =
+  const { isConnected, messages, error, connect, closeConnection, sendMessage } =
     useWebSocket();
 
   useEffect(() => {
@@ -54,12 +55,14 @@ function Room() {
     setData(messages[0].payload);
   }, [isConnected, messages]);
 
+  if (error && (!data || !isConnected)) return <Text>{error}</Text>;
   if (!data) return;
   const status = data.game.status;
 
   return (
     <>
       <Container display="block" type="header">
+        {error && <Text>{error}</Text>}
         <HeaderInfo owner={data.owner} roomId={roomNumber} />
         {name === data.owner && (
           <OwnerControls
